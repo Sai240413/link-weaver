@@ -83,5 +83,17 @@ The project uses the following DevOps-related tools and practices:
 - Vite build pipeline for producing the production-ready frontend bundle.
 - ESLint and Vitest to support code quality and verification during development.
 
+Additional DevOps tools and recommendations:
+
+- **Git** for source control and collaboration. Use feature branches, descriptive commit messages, and pull requests for changes.
+- **GitHub Actions** for CI/CD. The repository includes a CI workflow to build the app and run tests; configure repository secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in the GitHub repository settings before enabling production builds.
+- **Docker** (developer notes): build the production image with a multi-stage Vite build and a lightweight web server (Nginx). Example build command:
+
+	docker build --build-arg VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+		--build-arg VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY \
+		-t link-weaver:latest .
+
+- **CI recommendations**: run `npm ci`, run `npm run lint`, `npm run test`, then build (`npm run build`) as part of your CI pipeline. Cache node modules between runs to speed up builds.
+
 ## Summary
 Link Weaver is a well-structured URL shortener that combines a modern frontend, Supabase-backed authentication and storage, and serverless link processing. It supports authenticated link management, private URLs, redirects, and click tracking, while also including a container-based deployment setup with Docker and Nginx. The result is a compact, scalable project that is ready for both development and production use.
