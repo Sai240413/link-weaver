@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, SUPABASE_URL, supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Trash2, Copy, ExternalLink, Shield } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1`;
 type UrlRow = Tables<"urls">;
 
 const Dashboard = () => {
@@ -22,6 +22,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     (async () => {
+      if (!isSupabaseConfigured) {
+        toast.error("Supabase environment variables are required for the dashboard.");
+        nav("/", { replace: true });
+        return;
+      }
       const { data: s } = await supabase.auth.getSession();
       if (!s.session) { nav("/auth", { replace: true }); return; }
       setUserId(s.session.user.id);

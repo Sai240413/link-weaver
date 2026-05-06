@@ -80,6 +80,7 @@ The project uses the following DevOps-related tools and practices:
 - Supabase database migrations for schema management.
 - Supabase Row Level Security for access control at the database layer.
 - Environment variables for configuring Supabase project credentials during build and runtime.
+- Netlify for serving the static Vite frontend from the `dist` build output.
 - Vite build pipeline for producing the production-ready frontend bundle.
 - ESLint and Vitest to support code quality and verification during development.
 
@@ -94,6 +95,22 @@ Additional DevOps tools and recommendations:
 		-t link-weaver:latest .
 
 - **CI recommendations**: run `npm ci`, run `npm run lint`, `npm run test`, then build (`npm run build`) as part of your CI pipeline. Cache node modules between runs to speed up builds.
+
+## Netlify Frontend Deployment
+
+The repository includes `netlify.toml`, so Netlify can build and serve the frontend directly.
+
+- Base directory: project root, or `link-weaver` if you connect the parent folder.
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Node version: `20`
+
+Add these public Supabase environment variables in Netlify site settings before deploying the working app:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+The frontend will still load without those variables, but authentication, dashboard data, and URL shortening need them because those actions call Supabase.
 
 ## Summary
 Link Weaver is a well-structured URL shortener that combines a modern frontend, Supabase-backed authentication and storage, and serverless link processing. It supports authenticated link management, private URLs, redirects, and click tracking, while also including a container-based deployment setup with Docker and Nginx. The result is a compact, scalable project that is ready for both development and production use.

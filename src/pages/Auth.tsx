@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +16,15 @@ const Auth = () => {
 
   useEffect(() => {
     document.title = "Sign in — URL Shortener";
+    if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data }) => { if (data.session) nav("/dashboard", { replace: true }); });
   }, [nav]);
 
   const signUp = async () => {
+    if (!isSupabaseConfigured) {
+      toast.error("Supabase environment variables are required for authentication.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email, password,
@@ -30,6 +35,10 @@ const Auth = () => {
   };
 
   const signIn = async () => {
+    if (!isSupabaseConfigured) {
+      toast.error("Supabase environment variables are required for authentication.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);

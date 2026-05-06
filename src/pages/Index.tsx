@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, SUPABASE_URL, supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Copy, Link2, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1`;
 
 const Index = () => {
   const [longUrl, setLongUrl] = useState("");
@@ -20,6 +20,7 @@ const Index = () => {
 
   useEffect(() => {
     document.title = "URL Shortener — Short, fast, secure links";
+    if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
@@ -27,13 +28,30 @@ const Index = () => {
 
   const shorten = async () => {
     if (!longUrl.trim()) return;
+    if (!SUPABASE_URL) {
+      toast.error("Supabase URL is required to shorten URLs.");
+      return;
+    }
     setLoading(true);
     setShortUrl(null);
     try {
-      const { data, error } = await supabase.functions.invoke("shorten", {
-        body: { longUrl: longUrl.trim(), isPrivate },
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      const { data: authData } = isSupabaseConfigured
+        ? await supabase.auth.getSession()
+        : { data: { session: null } };
+
+      if (authData.session?.access_token) {
+        headers.Authorization = `Bearer ${authData.session.access_token}`;
+      }
+
+      const response = await fetch(`${FUNCTIONS_BASE}/shorten`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ longUrl: longUrl.trim(), isPrivate }),
       });
-      if (error) throw error;
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Failed to shorten");
       const code = (data as { shortCode: string }).shortCode;
       const url = `${FUNCTIONS_BASE}/redirect/${code}`;
       setShortUrl(url);
