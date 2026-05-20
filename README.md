@@ -115,5 +115,3 @@ The frontend will still load without those variables, but authentication, dashbo
 ## Summary
 Link Weaver is a well-structured URL shortener that combines a modern frontend, Supabase-backed authentication and storage, and serverless link processing. It supports authenticated link management, private URLs, redirects, and click tracking, while also including a container-based deployment setup with Docker and Nginx. The result is a compact, scalable project that is ready for both development and production use.
 
-
-this is demo
